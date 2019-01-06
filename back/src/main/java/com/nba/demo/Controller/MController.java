@@ -19,7 +19,7 @@ public class MController {
     @GetMapping(value = "/test")
     public void test(@RequestParam String Vteam,String Hteam){
         try{
-            String[] args1=new String[]{"D:\\Development_tools\\Anaconda\\python", "F:\\Python_project\\crawHuPu\\prediction.py",Vteam,Hteam};
+            String[] args1=new String[]{"D:\\Development_tools\\Anaconda\\python", "F:\\Course_project\\NBA_Design\\back_py\\crawHuPu\\prediction.py",Vteam,Hteam};
             Process proc=Runtime.getRuntime().exec(args1);
             BufferedReader in=new BufferedReader(new InputStreamReader(proc.getInputStream()));
             String line=null;

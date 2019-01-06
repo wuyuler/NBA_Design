@@ -115,13 +115,13 @@ def predict_winner(team_1, team_2, model):
     return model.predict_proba([features])
 
 if __name__ == '__main__':
-    Mstat = pd.read_csv(r'F:\Python_project\crawHuPu\data\Miscellaneous.csv')
-    Ostat = pd.read_csv(r'F:\Python_project\crawHuPu\data\Opponent.csv')
-    Tstat = pd.read_csv(r'F:\Python_project\crawHuPu\data\TeamPer.csv')
+    Mstat = pd.read_csv(r'F:\Course_project\NBA_Design\back_py\crawHuPu\data\Miscellaneous.csv')
+    Ostat = pd.read_csv(r'F:\Course_project\NBA_Design\back_py\crawHuPu\data\Opponent.csv')
+    Tstat = pd.read_csv(r'F:\Course_project\NBA_Design\back_py\crawHuPu\data\TeamPer.csv')
 
     team_stats = initialize_data(Mstat, Ostat, Tstat)
     #print(team_stats.loc["Boston Celtics"])
-    result_data = pd.read_csv(r'F:\Python_project\crawHuPu\data\result.csv')
+    result_data = pd.read_csv(r'F:\Course_project\NBA_Design\back_py\crawHuPu\data\result.csv')
     X, y = build_dataSet(result_data)
 
     # # 训练网络模型
@@ -130,10 +130,10 @@ if __name__ == '__main__':
     # model = linear_model.LogisticRegression()
     # model.fit(X, y)
     # joblib.dump(model,'rf.model')
-    model=joblib.load(r'F:\Python_project\crawHuPu\\rf.model')
+    model=joblib.load(r'F:\Course_project\NBA_Design\back_py\crawHuPu\rf.model')
     #利用10折交叉验证计算训练正确率
-    print("Doing cross-validation..")
-    print(cross_val_score(model, X, y, cv=10, scoring='accuracy', n_jobs=-1).mean())
-    # res=predict_winner(sys.argv[1],sys.argv[2],model)
-    # print(res)
-    # print(round(res[0][0],2))
+    # print("Doing cross-validation..")
+    # print(cross_val_score(model, X, y, cv=10, scoring='accuracy', n_jobs=-1).mean())
+    res=predict_winner(sys.argv[1],sys.argv[2],model)
+    print(res)
+    print(round(res[0][0],2))
