@@ -14,8 +14,8 @@ import java.util.Map;
 
 @RestController
 public class MController {
-    @Resource
-    private JdbcTemplate jdbcTemplate;
+//    @Resource
+//    private JdbcTemplate jdbcTemplate;
     @GetMapping(value = "/test")
     public void test(@RequestParam String Vteam,String Hteam){
         try{
