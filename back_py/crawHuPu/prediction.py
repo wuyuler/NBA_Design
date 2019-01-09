@@ -135,5 +135,4 @@ if __name__ == '__main__':
     # print("Doing cross-validation..")
     # print(cross_val_score(model, X, y, cv=10, scoring='accuracy', n_jobs=-1).mean())
     res=predict_winner(sys.argv[1],sys.argv[2],model)
-    print(res)
     print(round(res[0][0],2))

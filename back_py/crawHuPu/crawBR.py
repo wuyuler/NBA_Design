@@ -59,13 +59,13 @@ def insertResult():
     for i in res:
         cur.execute('insert into result values (?,?,?)', i)
         cur.commit()
-def output():
-    a=0
-    for i in teams:
-        print(i,end=' ')
-        a=a+1
-        if a%25==0:
-            print('\n')
+# def output():
+#     a=0
+#     for i in teams:
+#         print(i,end=' ')
+#         a=a+1
+#         if a%25==0:
+#             print('\n')
 
 
 if __name__ == '__main__':
