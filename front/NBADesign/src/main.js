@@ -6,10 +6,13 @@ import router from './router'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import echarts from 'echarts'
+import 'lib-flexible/flexible.js'
+import { JSEncrypt } from 'jsencrypt'
 Vue.use(ElementUI);
 Vue.config.productionTip = false
 import axios from 'axios'
 axios.defaults.baseURL = "http://localhost:8082"
+
 
 Vue.prototype.$ajax = axios
 Vue.prototype.$echarts = echarts

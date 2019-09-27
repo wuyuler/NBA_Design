@@ -1,13 +1,19 @@
 <template>
-    <el-collapse accordion>
-        <el-collapse-item v-for="(news,index) in newslist" :key="index"  >
-            <template slot="title">
-                <i class="iconfont icon-xinwen"></i> <p class="title">{{index+1}}--{{news.title}}</p>
-            </template>
-           
-            <p class="text" v-html="news.content"></p>
-        </el-collapse-item>
-    </el-collapse>
+    <div>
+    <el-card  v-for="(news,index) in newslist.slice((currentPage-1)*pagesize,currentPage*pagesize)" :key="index" class="title" shadow="hover" @click.native="goto_News_detail(news.id)" >
+            {{index+1}}--{{news.title}}
+            <!-- <el-button style="float: right; padding: 3px 0 ;font-size: 25px;" type="text" class="button" @click="goto_News_detail(news.id)" >详情</el-button> -->
+    </el-card>
+    <!-- 分页 -->
+        <el-pagination
+        @current-change="handleCurrentChange"
+        :current-page="currentPage" 
+        :page-size="pagesize"       
+        layout="total,prev, pager, next, jumper"
+        :total="newslist.length"
+        > 
+    </el-pagination>
+    </div>
 </template>
 
 <script>
@@ -20,9 +26,24 @@ export default {
     },
     data(){
         return{
-            newslist:[]
+            newslist:[],
+            // 分页属性
+            currentPage:1,
+            pagesize:10,
+            dialogFormVisible:false,
 
         }
+    },
+    methods:{
+        goto_News_detail(id){
+				console.log(id)
+                this.$router.push({name: "新闻详情",query :{'id':id}});
+				
+            },
+        handleCurrentChange:function(currentPage){//分页跳转
+            this.currentPage=currentPage;
+            console.log(this.currentPage)
+        },
     }
 }
 </script>
@@ -30,8 +51,7 @@ export default {
 <style>
     .title {
     font-size: 25px;
-  }
-  .text{
-      font-size: 20px;
+    margin-bottom: 18px;
+    cursor:pointer;
   }
 </style>

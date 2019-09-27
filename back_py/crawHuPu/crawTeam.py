@@ -11,6 +11,8 @@ team_baseinfo=[]
 s=requests
 teamUrl = []
 teamname=[]
+
+#获取队伍标志,和各个主页的url
 def getTeam():
     global teamUrl,teamname
     url='https://nba.hupu.com/teams'
@@ -38,6 +40,7 @@ def getTeam():
         team_chToEng[teamname[i]]=teamUrl[i][27:]
 
 
+#球队的基本信息
 def getBaseInfo():
     for url2 in teamUrl:
         res=s.get(url2).content
@@ -50,13 +53,14 @@ def getBaseInfo():
         temp_team_baseinfo['website']=etree.HTML(res).xpath("//div[@class='team_data']//div[@class='font']/p[3]/a/@href")[0].strip()
         temp_team_baseinfo['coach']=etree.HTML(res).xpath("//div[@class='team_data']//div[@class='font']/p[4]/text()")[0].strip()
         team_baseinfo.append(temp_team_baseinfo)
-
+#插入数据库的队伍的基本信息
 def insert_team_base():
     for base in team_baseinfo:
         cur.execute('insert into team_base(t_name,intro,dateToNBA,home,website,coach) values (?,?,?,?,?,?)',
                     (base['t_name'],base['intro'],base['dateToNBA'],base['home'],base['website'],base['coach']))
         cur.commit()
 
+#获取今年球队的比赛数据
 def getTeam_data():
     url = 'https://nba.hupu.com/stats/teams'
     response = s.get(url)
@@ -64,27 +68,30 @@ def getTeam_data():
     # 获取队伍主页网址
     teamtoulan = etree.HTML(home_content).xpath("//table[@id='data_js_sort']/tbody//td/text()")
     teams=etree.HTML(home_content).xpath("//tbody//td[2]/a/text()")
+    teams =[str(t) for t in teams]
     teams_temp={}
-    for i in range(30):
+    i=0
+    while 20+i*19<len(teamtoulan):
         temp1=[]
         for j in range(19):
             temp1.append(teamtoulan[20+i*19+j])
         teams_temp[teams[i+1]]=temp1[1:]
+        i=i+1
+    print(teams_temp)
     return teams_temp
 
 def insert_team_data():
     teams_data=getTeam_data()
     cur.execute('delete from team_data')
     cur.commit()
-
-    for i in teamname:
-        list = []
-        list.append(i)
-        for j in teams_data.get(i):
-            list.append(j)
-        cur.execute('insert into team_data values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',list)
+    for t_name,t_data in teams_data.items():
+        temp=[]
+        temp.append(t_name)
+        temp.extend(t_data)
+        cur.execute('insert into team_data values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', temp)
         cur.commit()
 
+#获取今年各个球队的
 def crawGameCondition():
     url = 'https://nba.hupu.com/standings'
     response = s.get(url)
@@ -112,13 +119,17 @@ def crawPlayerData():
         del_list = ['\n','排名', '球员', '球队', '得分', '命中-出手', '命中率', '命中-三分', '三分命中率', '命中-罚球', '罚球命中率', '场次', '上场时间']
         temp = [x for x in temp if x not in del_list]
         playerdata.extend(temp)
+    print(playerdata)
     return playerdata
 def insertPlayerData():
     cur.execute('delete from PlayerData')
     cur.commit()
     playerdata=crawPlayerData()
+    playerdata.insert(361,'_')
     for i in range(0,len(playerdata),12):
         temp=playerdata[i:i+12]
+        print(i)
+        print(temp)
         cur.execute('insert into PlayerData values (?,?,?,?,?,?,?,?,?,?,?,?)', temp)
         cur.commit()
 
@@ -204,12 +215,12 @@ def crawNews():
         newsContent.append(temp)
     return newsContent
 def insertNews():
+    print("wwww")
     newsContent=crawNews()
     cur.execute('delete from News')
     cur.commit()
     playerdata = crawPlayerData()
     for i in newsContent:
-        print(i)
         cur.execute('insert into News values (?,?)', i)
         cur.commit()
 
@@ -235,24 +246,30 @@ def updateSchedule():
         List.append(schedule[i])
         List.append(schedule[i + 1])
         List.append(schedule[i + 2])
-        i = i + 3;
+        i = i + 3
         cur.execute('insert into Schedule values(?,?,?,?)', List)
         cur.commit()
-    print('end')
+
 
 if __name__ == '__main__':
     getTeam()
 
-    #更新球队的数据排行
-    insert_team_data()
-    #更新当前战况
-    insertGameCondition()
+    # #更新球队的数据排行
+    # insert_team_data()
+    # print("success1")
+    # #更新当前战况
+    # insertGameCondition()
+    # print("success2")
     #更新球员当前数据
-    insertPlayerData()
-    #更新按球队分类的球员的当前数据
-    updatePlayerData_team()
+    # insertPlayerData()
+    # print("success3")
+    # #更新按球队分类的球员的当前数据
+    # updatePlayerData_team()
+    # print("success4")
     #更新最新新闻
     insertNews()
-    #更新未来比赛安排
-    updateSchedule()
+    # print("success5")
+    # #更新未来比赛安排
+    # updateSchedule()
+    # print("success6")
 

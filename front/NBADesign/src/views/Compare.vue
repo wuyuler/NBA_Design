@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- <h2 v-for="(value,key,index) in teamsC_E" :key="key">{{value}}</h2> -->
-
+        
         <el-row>
                 <el-col :span="4" :offset="2">
                     <transition name="el-fade-in-linear">
@@ -117,7 +117,7 @@ export default {
                 Vteam: '',
                 Hteam: '',
             },
-            comp:30,
+            comp:50,
             rules:{
                 Vteam:[{required: true, message: '请输入客场队伍', trigger: 'blur'}],
                 Hteam:[{required: true, message: '请输入主场队伍', trigger: 'blur'}],
@@ -142,8 +142,9 @@ export default {
         },
         compare(){
             this.$refs.form.validate((valid) => {
-                this.btu_loading=true;
+                
                 if (valid) {
+                    this.btu_loading=true;
                     if(this.form.Vteam===this.form.Hteam){
                         this.comp=50
                         this.btu_loading=false;
@@ -174,7 +175,6 @@ export default {
         getdata(team1,team2){
       let self = this;
       var url = "stat/" + team1 + "/vs/" + team2;
-      console.log('正在请求');
       this.$ajax({
         type:'get',
         url:url,

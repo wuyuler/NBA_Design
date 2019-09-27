@@ -2,9 +2,9 @@
     <transition name="el-fade-in-linear">
     <el-table :data="teamdatalist" style="width: 100%" v-loading="listLoading">
         <el-table-column
+            fixed
             type="index"
             width="70"
-            fixed
             >
         </el-table-column>
         <el-table-column

@@ -9,7 +9,8 @@ let base = 'http://localhost:8082';
 export const requestLogin=params=>{ return axios.post(`${base}/loginin`,qs.stringify(params));};
 //TODO:校验用户注册信息
 export const requestSign=params=>{ return axios.post(`${base}/signin`,qs.stringify(params));};
-
+//get the type of the team
+export const get_team_type=params=>{return axios.get(`${base}/get_categories`,{ params: params });}
 //查询胜率
 export const requestCompare=params=>{ return axios.get(`${base}/compare`,{ params: params });};
 //查询球队数据排名
@@ -20,6 +21,27 @@ export const requestgetGame_conditon=()=>{ return axios.get(`${base}/getGame_con
 export const requestgetPlayerData=params=>{ return axios.get(`${base}/getPlayerData`,{ params: params });};
 //查询虎扑24小时最热新闻
 export const requestgetNews=()=>{ return axios.get(`${base}/getNews`);};
+//获取
+export const handleUserList=params=>{ return axios.get(`${base}/player`,{ params: params });};
+
+export const baseHandle=params=>{ return axios.get(`${base}/baseinfor`,{ params: params });};
+
+export const scoreHandle=params=>{ return axios.get(`${base}/score`,{ params: params });};
+//获取新闻详情
+export const getIDnews=params=>{ return axios.get(`${base}/getIDnews/`+params.ID);};
+//获取某新闻的所有评论
+export const getComment=params=>{ return axios.get(`${base}/getComment/`,{ params: params });};
+//上传评论
+export const save_comment=params=>{ return axios.get(`${base}/save_comment`,{ params: params });};
+//修改信息
+export const update_info=params=>{return axios.get(`${base}/                `,{params: params });};
+
+
+
+//获取反馈
+export const get_feed=()=>{return axios.get(`${base}/get_feed`)}
+//将反馈置为已处理
+export const handle_log=params=>{return axios.get(`${base}/handle_log`,{ params: params });}
 
 //获取所有队伍中文 英文缩写
 export const getTeamValues=()=>{

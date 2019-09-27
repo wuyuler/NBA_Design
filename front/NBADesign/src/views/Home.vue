@@ -6,14 +6,18 @@
   <el-col :span="10" class="logo" :class="collapsed?'logo-collapse-width':'logo-width'">{{collapsed?'':sysname}}</el-col >
   <el-col :span="10"><div class="tools" @click.prevent="collapse"><i class="el-icon-arrow-left" ></i></div></el-col>
   <el-col :span="4" class="userinfo">
+
         <el-dropdown trigger="hover">
 					<span class="el-dropdown-link userinfo-inner"> {{sysUserName}}</span>
 					<el-dropdown-menu slot="dropdown">
 						<!-- <el-dropdown-item v-show="usercondition==1" @click.native="gotoUserInfo">个人信息</el-dropdown-item> -->
 						<el-dropdown-item divided @click.native="logout" v-if="usercondition!=0">退出登录</el-dropdown-item>
             <el-dropdown-item v-if="usercondition==0" @click.native="login">进入登录页面</el-dropdown-item>
+            <el-dropdown-item  @click.native="dialogFormVisible = true">打开嵌套表单的 Dialog</el-dropdown-item>
+            <el-dropdown-item  @click.native="super_dialogFormVisible = true">超级会员注册</el-dropdown-item>
 					</el-dropdown-menu>
 				</el-dropdown>
+       
   </el-col>
 </el-col>
 <el-col :span="24" class="main">
@@ -64,12 +68,69 @@
 					</el-col>
 				</div>
 			</section>
+      <!-- 修改个人信息的表单 -->
+<el-dialog title="收货地址" :visible.sync="dialogFormVisible">
+  <el-form :model="form">
+    <el-form-item label="姓名" :label-width="formLabelWidth">
+      <el-input v-model="form.name" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="年龄" :label-width="formLabelWidth">
+      <el-input v-model="form.age" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="性别" :label-width="formLabelWidth">
+      <el-select v-model="form.gender" placeholder="请选择活动区域">
+        <el-option label="男" value="男"></el-option>
+        <el-option label="女" value="女"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item label="支持球队" :label-width="formLabelWidth">
+      <el-select v-model="form.support_team" filterable  placeholder="请选择支持球队" >
+        <el-option v-for="(value,key) in teamsC_E" :key="key" :label="key" :value="key"></el-option>
+      </el-select>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="dialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="update_selfData">确 定</el-button>
+  </div>
+</el-dialog>
+
+<!-- 超级会员 -->
+<el-dialog title="添加管理员" :visible.sync="super_dialogFormVisible">
+  <el-form :model="super_form">
+    <el-form-item label="姓名" :label-width="formLabelWidth">
+      <el-input v-model="super_form.name" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="年龄" :label-width="formLabelWidth">
+      <el-input v-model="super_form.age" autocomplete="off"></el-input>
+    </el-form-item>
+    <el-form-item label="性别" :label-width="formLabelWidth">
+      <el-select v-model="super_form.gender" placeholder="请选择活动区域">
+        <el-option label="男" value="男"></el-option>
+        <el-option label="女" value="女"></el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item label="支持球队" :label-width="formLabelWidth">
+      <el-select v-model="super_form.support_team" filterable  placeholder="请选择支持球队" >
+        <el-option v-for="(value,key) in teamsC_E" :key="key" :label="key" :value="key"></el-option>
+      </el-select>
+    </el-form-item>
+    </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="super_dialogFormVisible = false">取 消</el-button>
+    <el-button type="primary" @click="update_selfData">确 定</el-button>
+  </div>
+</el-dialog>
 </el-col>
+
+
 
 </el-row>
 </template>
 
 <script>
+import { getTeamValues } from '../request/api';
+import { update_info } from '../request/api';
 export default {
   name: 'App',
   data() {
@@ -77,10 +138,32 @@ export default {
       sysUserName: '未登录',
       sysname:"NBA对战系统",
       collapsed:false,
-      usercondition:0
+      usercondition:0,
+      // 表单数据
+      dialogFormVisible: false,
+      //管理员注册
+      super_dialogFormVisible:false,
+      form: {
+          age: '',
+          gender:'',
+          support_team:'',
+          user_id: '',
+        },
+      super_form: {
+          user_id: '',
+          upw:'',
+        },
+        formLabelWidth: '120px',
+        teamsC_E:{},
     };
   },
   methods:{
+    //提交表单修改
+    update_selfData(){
+      this.dialogFormVisible = false,
+      console.log(this.form),
+      update_info(this.form)
+    },
     //退出登录
 			logout: function () {
 				var _this = this;
@@ -119,6 +202,8 @@ export default {
       
   },
   created(){
+    //获取所有球队名称
+    this.teamsC_E=getTeamValues()
     //后去登录用户的权限
       var status=sessionStorage.getItem('userstatus')
       if(status){

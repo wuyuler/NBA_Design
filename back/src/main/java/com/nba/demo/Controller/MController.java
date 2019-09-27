@@ -2,25 +2,30 @@ package com.nba.demo.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @RestController
+//实现跨域注解
+//origin="*"代表所有域名都可访问
+//maxAge飞行前响应的缓存持续时间的最大年龄，简单来说就是Cookie的有效期 单位为秒
+//若maxAge是负数,则代表为临时Cookie,不会被持久化,Cookie信息保存在浏览器内存中,浏览器关闭Cookie就消失
+@CrossOrigin(origins = "*",maxAge = 3600)
 public class MController {
     @Resource
     private JdbcTemplate jdbcTemplate;
     @GetMapping(value = "/test")
     public void test(@RequestParam String Vteam,String Hteam){
+        File f=new File("..");
+
         try{
             String[] args1=new String[]{"D:\\Development_tools\\Anaconda\\python", "F:\\Course_project\\NBA_Design\\back_py\\crawHuPu\\prediction.py",Vteam,Hteam};
             Process proc=Runtime.getRuntime().exec(args1);
@@ -36,26 +41,10 @@ public class MController {
         }
 
     }
-
     @GetMapping(value ="/compare")
-    public String compare(@RequestParam String Vteam,@RequestParam String Hteam){
+    public String compare(@RequestParam String Hteam,@RequestParam String Vteam){
         System.out.println("Vteam:"+Vteam+"-"+"Hteam"+Hteam);
-        try{
-            String[] args1=new String[]{"D:\\Development_tools\\Anaconda\\python", "F:\\Course_project\\NBA_Design\\back_py\\crawHuPu\\prediction.py",Vteam,Hteam};
-            Process proc=Runtime.getRuntime().exec(args1);
-            BufferedReader in=new BufferedReader(new InputStreamReader(proc.getInputStream()));
-            String line=null;
-            while ((line = in.readLine()) != null) {
-
-                return line;
-            }
-
-            in.close();
-            proc.waitFor();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return null;
+        return jdbcTemplate.queryForObject("select rate from winning_rate where home_team = '"+Hteam+"'and guest_team = '"+Vteam+"'",String.class);
     }
     @GetMapping(value = "/getTeam_data")
     public List getIeam_data(){
@@ -63,8 +52,12 @@ public class MController {
     }
 
     @GetMapping(value = "/getGame_conditon")
-    public List getGame_conditon(){
-        return jdbcTemplate.queryForList("select * from game_conditon  ");
+    public Map<String, List> getGame_conditon(){
+        Map condition = new HashMap();
+        System.out.println("Success!!!");
+        condition.put("east",jdbcTemplate.queryForList("select * from game_conditon where eorw = 'east' order by rank asc"));
+        condition.put("west",jdbcTemplate.queryForList("select * from game_conditon where eorw = 'west' order by rank asc")) ;
+        return condition;
     }
     @GetMapping(value = "/getPlayerData")
     public List getPlayerData(@RequestParam String playername){
@@ -75,9 +68,11 @@ public class MController {
     }
     @GetMapping(value = "/getNews")
     public List getNews(){
-
-        return jdbcTemplate.queryForList("select * from News  ");
-
+        return jdbcTemplate.queryForList("select * from News");
+    }
+    @GetMapping(value = "/getReq")
+    public void getReq(HttpServletRequest request){
+        System.out.println(request.getSession().getId());
     }
     @GetMapping(value = "/updateTeam_data")
     public String updateTeam_data(){
@@ -114,6 +109,21 @@ public class MController {
         String sql="select * from Schedule";
         return jdbcTemplate.queryForList(sql);
     }
+    @GetMapping(value = "/get_categories")
+    public String get_categories(@RequestParam String teamname){
+        teamname = "%"+teamname;
+        String type = jdbcTemplate.queryForObject("select categories from categories where team_name like '"+teamname+"'",String.class);
+        return type;
+    }
+    @GetMapping(value = "/get_feed")
+    public List get_feed(){
+        List feed_data = jdbcTemplate.queryForList("select * from user_log where hasHandled=0 order by log_date");
+        return feed_data;
+    }
+    @GetMapping(value = "/handle_log")
+    public void handle_log(@RequestParam Integer log_id){
+        jdbcTemplate.update("update user_log set hashandled=1 where log_id=?",log_id);
+    }
 
     @GetMapping(value = "/stat/{teamname1}/vs/{teamname2}/table")
     public List gettable(@PathVariable("teamname1") String teamname1, @PathVariable("teamname2") String teamname2){
@@ -124,7 +134,7 @@ public class MController {
     }
     @GetMapping(value = "/{teamname1}/vs/{teamname2}/eighttimes")
     public Map<String, List<String>> getscore(@PathVariable("teamname1") String teamname1,@PathVariable("teamname2") String teamname2) {
-        List temp= jdbcTemplate.queryForList( "select top 8 gamedate,homescore,guestscore from gamestat where (guestname = '"+teamname2+"' and homename = '"+teamname1+"') order by cast(gamedate as date)desc" );
+        List temp= jdbcTemplate.queryForList( "select gamedate,homescore,guestscore from gamestat where (guestname = '"+teamname2+"' and homename = '"+teamname1+"') order by cast(gamedate as date) desc limit 8" );
         Map<String,List<String>> datescore = new HashMap<>();
         ArrayList<String> playdate = new ArrayList<>();
         ArrayList<String> homeplayscore = new ArrayList<>();
@@ -143,6 +153,23 @@ public class MController {
         datescore.put("guest",guestplaysocre);
         System.out.println(datescore);
         return datescore;
+    }
+    @GetMapping(value = "getComment")
+    public List get_comment(@RequestParam String NewsId){
+        return jdbcTemplate.queryForList("select * from _comment where news_id = '"+NewsId+"'");
+    }
+    @GetMapping(value = "/getIDnews/{ID}")
+    public Map get_id_news(@PathVariable("ID") String ID){
+        return jdbcTemplate.queryForMap("select title, content from news where id = '"+ID+"'");
+    }
+    @GetMapping(value = "/save_comment")
+    public String save_comment(@RequestParam String content, @RequestParam String user_id, @RequestParam String news_id){
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+        System.out.println(df.format(new Date()));// new Date()为获取当前系统时间
+        int n_id = Integer.valueOf(news_id);
+        jdbcTemplate.update("insert into _comment(news_id, user_id, content,time) " +
+                "values(?,?,?,?)",n_id,user_id,content, df.format(new Date()));
+        return "成功";
     }
     @GetMapping(value = "/stat/{team1}/vs/{team2}") //team1对应甲队，team2对应乙队
     public Map<String,ArrayList<String>> getstat(@PathVariable("team1") String team1,@PathVariable("team2") String team2){

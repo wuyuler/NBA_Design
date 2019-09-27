@@ -10,7 +10,7 @@ cur=conn.cursor()
 s=requests
 teams=[]
 games=[]
-def crawdata_17_18():
+def crawdata():
     global teams
     url = 'https://www.basketball-reference.com/leagues/NBA_2018.html#all_team-stats-per_game'
     response = s.get(url)
@@ -23,7 +23,7 @@ def crawdata_17_18():
     del_list=['\\n','\\n\\n   ','*']
     teams=[x for x in teams if x not in del_list]
 
-def crawGame():#爬取17-18年比赛数据
+def crawGame():
     global games
     year=['2016','2017','2018']
     for y in year:

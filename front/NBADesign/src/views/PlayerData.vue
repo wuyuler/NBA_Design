@@ -23,7 +23,6 @@
         <el-table-column label="罚球命中率" prop="z" align="center"></el-table-column>
         <el-table-column label="场次" prop="x" align="center"></el-table-column>
         <el-table-column label="上场时间" prop="c" align="center"></el-table-column>
-        
     </el-table>
     <el-pagination
         @current-change="handleCurrentChange"

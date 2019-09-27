@@ -2,7 +2,9 @@
 <div class="deit">
 <el-card class="box-card">
     <div slot="header" class="clearfix">
-        <span>{{Names}}队</span>
+        <span class="team_name">{{Names}}队</span>
+       <!-- 球队分类展示 -->
+        <span v-bind:class="{attack:categories=='进攻型球队',defense:categories=='防守型球队',comprehensive:categories=='综合型球队'} ">{{this.categories}}</span>
     </div>
     <div v-for="o in baseList" :key="o" class="main">
         <div class="img">
@@ -61,77 +63,82 @@
 </template>
 <script>
 import echarts from 'echarts'
+import { handleUserList,baseHandle,scoreHandle,get_team_type } from '../request/api';
 export default{
     data(){
         return{
+        Names:'',
         userList:[],
         baseList:[],
         ScoreList:[],
-        nums:[]
+        nums:[],
+        // 球队类别
+        categories: ''
     }},
     created(){
         this.Names=this.$route.query.Name,
-        this.handleUserList(this.Names),
-        this.baseHandle(this.Names),
-        this.scoreHandle(this.Names),
+        this.handleUserList2(this.Names),
+        this.baseHandle2(this.Names),
+        // 分类
+        this.get_Categories(),
+        this.scoreHandle2(this.Names),
         this.drawScore()
-    },
-    mounted(){
-       // this.drawScore()
+        
     },
     methods:{
-        handleUserList(Names) {
+        test(){
+            console.log("sadasdasdasdsasadssad")
+        },
+        handleUserList2(Names) {
+            let para={
+                Names:Names
+            }
             var self=this;
-            this.$ajax({
-                method:'get',
-                url:'http://localhost:8082/player',
-                responseType:'json',
-                params:{
-                    Names:Names
-                }
-            }).then(
+            handleUserList(para).then(
                 function(res)
                 {
-                    console.log(res);
+                    //console.log(res);
                     self.userList=res.data
                 })
                 .catch(function(err){
-                console.log(err);
+                //console.log(err);
                 })
         },
-        baseHandle(Names) {
-            var self=this;
-            this.$ajax({
-                method:'get',
-                url:'http://localhost:8082/baseinfor',
-                responseType:'json',
-                params:{
-                    Names:Names
+        get_Categories(){
+            console.log(this.Names)
+            let para={'teamname':this.Names}
+            get_team_type(para).then(
+                    res=>{
+                    console.log(res.data)
+                    this.categories=res.data
                 }
-            }).then(
+            )
+        },
+        baseHandle2(Names) {
+            var self=this;
+            let para={
+                Names:Names
+            }
+            baseHandle(para).then(
                 function(res)
                 {
-                    console.log(res);
+                    //console.log(res);
                     self.baseList=res.data
                     
                 })
                 .catch(function(err){
-                console.log(err);
+                //console.log(err);
                 })
         },
-        scoreHandle(Names) {
+        scoreHandle2(Names) {
             var self=this;
-            this.$ajax({
-                method:'get',
-                url:'http://localhost:8082/score',
-                responseType:'json',
-                params:{
-                    Names:Names
-                }
-            }).then(
+            let para={
+                Names:Names
+            }
+            scoreHandle(para).then(
                 function(res)
                 {
-                    console.log(res);
+                    //console.log(res);
                     self.ScoreList=res.data;
                     self.nums[0]=self.ScoreList[0].score;
                     self.nums[1]=self.ScoreList[0].help;
@@ -141,7 +148,7 @@ export default{
                     self.drawScore();
                 })
                 .catch(function(err){
-                console.log(err);
+                //console.log(err);
                 })
         },
         drawScore()
@@ -150,6 +157,7 @@ export default{
             let myChart=this.$echarts.init(document.getElementById("score"))
             myChart.setOption({
                 tooltip:{},
+               
     radar: {
         name: {
             textStyle: {
@@ -167,6 +175,7 @@ export default{
            { name: '场均失误', max: 150}
         ]
     },
+        
         series: [{
         type: 'radar',
         data : [
@@ -185,6 +194,9 @@ export default{
   .text {
     font-size: 14px;
   }
+  .team_name{
+      font-size: 20px
+  }
 
   .item {
     margin-bottom: 18px;
@@ -202,4 +214,5 @@ export default{
   .box-card {
     width: 480px;
   }
+  
 </style>

@@ -7,6 +7,7 @@ from sklearn import linear_model
 from sklearn.model_selection import cross_val_score
 from sklearn.externals import joblib
 import sys
+import pypyodbc
 
 # 当每支队伍没有elo等级分时，赋予其基础elo等级分
 base_elo = 1600
@@ -16,10 +17,19 @@ X = []
 y = []
 folder = 'data' #存放数据的目录
 
+team_name={'火箭': 'Houston Rockets', '马刺': 'San Antonio Spurs', '鹈鹕': 'New Orleans Pelicans', '灰熊': 'Memphis Grizzlies', '独行侠': 'Dallas Mavericks',
+										'勇士': 'Golden State Warriors', '快船': 'Los Angeles Clippers', '湖人': 'Los Angeles Lakers', '国王': 'Sacramento Kings', '太阳': 'Phoenix Suns',
+										'掘金': 'Denver Nuggets', '雷霆': 'Oklahoma City Thunder', '开拓者': 'Portland Trail Blazers', '爵士': 'Utah Jazz', '森林狼': 'Minnesota Timberwolves',
+										'猛龙': 'Toronto Raptors', '76人': 'Philadelphia 76ers', '凯尔特人': 'Boston Celtics', '篮网': 'Brooklyn Nets', '尼克斯': 'New York Knicks',
+										 '热火': 'Miami Heat', '黄蜂': 'Charlotte Hornets', '魔术': 'Orlando Magic', '奇才': 'Washington Wizards', '老鹰': 'Atlanta Hawks', '雄鹿': 'Milwaukee Bucks',
+										  '步行者': 'Indiana Pacers', '活塞': 'Detroit Pistons', '公牛': 'Chicago Bulls', '骑士': 'Cleveland Cavaliers'}
 # 根据每支队伍的Miscellaneous Opponent，Team统计数据csv文件进行初始化
 def initialize_data(Mstat, Ostat, Tstat):
+    #综合数据
     new_Mstat = Mstat.drop(['Rk', 'Arena'], axis=1)
-    new_Ostat = Ostat.drop(['Rk', 'G', 'MP'], axis=1)
+    #每场对手得分等的平均数据
+    new_Ostat = Ostat.drop(['Rk', 'G', 'MP'], axis=1) #G 参加的比赛常数,MP 平均比赛时间
+    #球队的得分等数据的平均值
     new_Tstat = Tstat.drop(['Rk', 'G', 'MP'], axis=1)
 
     team_stats1 = pd.merge(new_Mstat, new_Ostat, how='left', on='Team')
@@ -120,19 +130,36 @@ if __name__ == '__main__':
     Tstat = pd.read_csv(r'F:\Course_project\NBA_Design\back_py\crawHuPu\data\TeamPer.csv')
 
     team_stats = initialize_data(Mstat, Ostat, Tstat)
-    #print(team_stats.loc["Boston Celtics"])
+    print(team_stats.loc["Boston Celtics"])
     result_data = pd.read_csv(r'F:\Course_project\NBA_Design\back_py\crawHuPu\data\result.csv')
     X, y = build_dataSet(result_data)
 
-    # # 训练网络模型
-    # print("Fitting on %d game samples.." % len(X))
-    #
-    # model = linear_model.LogisticRegression()
-    # model.fit(X, y)
-    # joblib.dump(model,'rf.model')
+    训练网络模型
+    print("Fitting on %d game samples.." % len(X))
+    model = linear_model.LogisticRegression()
+    # while True:
+    #     model.fit(X, y)
+    #     # 利用10折交叉验证计算训练正确率
+    #     acc=cross_val_score(model, X, y, cv=10, scoring='accuracy', n_jobs=-1).mean()
+    #     print(acc)
+    #     if acc>0.7:
+    #         joblib.dump(model,'rf2.model')
+    #         break
     model=joblib.load(r'F:\Course_project\NBA_Design\back_py\crawHuPu\rf.model')
-    #利用10折交叉验证计算训练正确率
-    # print("Doing cross-validation..")
-    # print(cross_val_score(model, X, y, cv=10, scoring='accuracy', n_jobs=-1).mean())
-    res=predict_winner(sys.argv[1],sys.argv[2],model)
-    print(round(res[0][0],2))
+
+    conn = pypyodbc.connect(driver='{SQL Server}', server='localhost', database='crawHuPu', uid='sa',
+                            pwd='admin1600200010')
+    cur = conn.cursor()
+    for h_team in team_name.values():
+        for g_team in team_name.values():
+            res = predict_winner(h_team,g_team, model)
+            print(res)
+            result=[]
+            result.append(h_team)
+            result.append(g_team)
+            result.append(str(round(res[0][0],2)))
+            cur.execute('insert into winning_rate values(?,?,?)', result)
+            cur.commit()
+    #res=predict_winner(sys.argv[1],sys.argv[2],model)
+    #res=predict_winner('Houston Rockets','San Antonio Spurs',model)
+    #print(round(res[0][0],2))

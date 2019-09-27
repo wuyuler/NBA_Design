@@ -11,6 +11,10 @@ import Game_condition from '@/views/Game_condition'
 import PlayerData from '@/views/PlayerData'
 import News from '@/views/News'
 import Schedule from '@/views/Schedule'
+import demo from '@/views/demo'
+import News_detail from '@/views/News_detail'
+import feedback from '@/views/feedback'
+
 Vue.use(Router)
 
 export default new Router({
@@ -32,12 +36,17 @@ export default new Router({
       name: 'NBA对战系统',
       component: Home,
       iconCls: 'el-icon-setting',
-      redirect:'/login',
+      redirect:'/demo',
       children:[
         {
           path: '/compare',
           name: '对战',
           component: Compare,
+        },
+        {
+          path: '/demo',
+          name: '测试',
+          component: demo,
         },
       ]
     },
@@ -71,6 +80,13 @@ export default new Router({
 
         },
         {
+          path: '/News_detail',
+          name: '新闻详情',
+          component: News_detail,
+          hidden:true
+
+        },
+        {
           path: '/Schedule',
           name: '未来7天比赛日程',
           component: Schedule,
@@ -96,11 +112,24 @@ export default new Router({
           name: '球队详细信息',
           component: team_detail,
           hidden:true
-        },
+        }, 
         
+      ]
+    },
+    {
+      path: '/',
+      name: '管理',
+      component: Home,
+      iconCls: 'el-icon-setting',
+      redirect:'/login',
+      children:[
         
-        
-        
+        {
+          path: '/feedback',
+          name: '反馈界面',
+          component: feedback,
+          iscontroller:true
+        }
       ]
     },
   ]
